@@ -240,7 +240,9 @@ def create_test_list(test_list):
     sce_lines = get_env('scenario_lines')
     for feature, scenarios in test_list.items():
         for scenario_name in scenarios:
-            paths.append('{}:{}'.format(feature, sce_lines[feature][scenario_name]))
+            feature_scenario_lines = sce_lines[feature]
+            scenario_name = next((key for key in feature_scenario_lines if scenario_name.startswith(key)), None)
+            paths.append('{}:{}'.format(feature, feature_scenario_lines[scenario_name]))
     return ','.join(paths)
 
 
