@@ -179,12 +179,11 @@ def should_feature_be_run(path_feature):
     if not feature:
         tags_list = []
     else:
-        tags_list = [
-            scenario.tags
-            for scenario in feature.scenarios
-            if hasattr(feature, 'scenarios')
-        ]
-        tags_list.append(feature.tags)
+        tags_list = []
+        if hasattr(feature, 'scenarios'):
+            for scenario in feature.scenarios:
+                scenario_tags = get_scenario_tags(scenario)
+                tags_list.append(scenario_tags)
     match_tag = any(match_for_execution(tags) for tags in tags_list)
 
     filename = feature.filename
@@ -425,6 +424,18 @@ def set_behave_tags():
         behave_tags, execution=get_save_function(behave_tags, tags_line)
     )
 
+def get_scenario_tags(scenario, include_outline_example_tags=True):
+    if type(scenario) is dict:
+        scenario_tags_set = set(scenario['tags'])
+    else:
+        scenario_tags = scenario.effective_tags
+        if include_outline_example_tags:
+            if isinstance(scenario, ScenarioOutline):
+                for example in scenario.examples:
+                    scenario_tags.extend(example.tags)
+        scenario_tags_set = set(scenario_tags)
+    result = list(scenario_tags_set)
+    return result
 
 def set_system_paths():
     input_path = os.pathsep + get_env('temp')
